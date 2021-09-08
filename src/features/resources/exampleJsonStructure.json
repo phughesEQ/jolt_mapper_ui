@@ -1,0 +1,17 @@
+{
+  "lead_data": {
+    "current_policy": {
+      "street_address": "742 Evergreen Terrace",
+      "occupation": "Doctor",
+      "contact": {
+        "first_name": "Homer",
+        "last_name": "Simpson",
+        "city": "Springfield",
+        "postal_state": "OR"
+      },
+      "health": {
+        "age": 72
+      }
+    }
+  }
+}
