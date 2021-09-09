@@ -1,11 +1,10 @@
 import {createSlice} from '@reduxjs/toolkit';
 import {v4 as uuidv4} from 'uuid';
-import schema from "../resources/exampleJsonStructure.json"
 
 const createJsonElement = id => {
     return {
         id: id,
-        name: "",
+        name: "Name",
         value: "",
         inputType: "String",
         required: false,
@@ -13,20 +12,10 @@ const createJsonElement = id => {
     }
 }
 
-// TODO: This function is a horrible abomination for parsing values. It's a temporary solution which doesn't work for arrays
-// The arrays give a basic value and not the correct full parsing. This should read from schemas not json inputs but making do
-// for innovation
-const extractKeys = (obj, prefix = '') => Object.keys(obj)
-    .reduce((res, key) => {
-        if (Array.isArray(obj[key])) return [...res, ...extractKeys(obj[key], prefix + key + '.')];
-        if (typeof obj[key] === 'object' && obj[key]) return [...res, ...extractKeys(obj[key], prefix + key + '.')];
-        return [...res, prefix + key];
-    }, []);
-
 const initialState = {
     jobCode: "",
-    inputValues: extractKeys(schema),
-    jsonProperties: [createJsonElement(uuidv4())]
+    jsonProperties: [createJsonElement(uuidv4())],
+    jsonSchema: {}
 };
 
 export const creatorSlice = createSlice({
@@ -50,6 +39,7 @@ export const creatorSlice = createSlice({
         },
         updateInputTypeById: (state, action) => {
             const type = (property, action) => {
+                if (property.inputType === "Object" && property.properties.length >= 1) return property
                 return {...property, inputType: action.payload.type}
             }
             state.jsonProperties = state.jsonProperties.map(property => updateFieldById(property, action, type))
@@ -65,9 +55,30 @@ export const creatorSlice = createSlice({
                 return {...property, value: action.payload.value}
             }
             state.jsonProperties = state.jsonProperties.map(property => updateFieldById(property, action, value))
+        },
+        createSchema: (state, action) => {
+            state.jsonSchema = {
+                type: "object",
+                properties: convertFieldToSchema(action.payload)
+            }
         }
     }
 });
+
+function convertFieldToSchema(fields) {
+    return fields.reduce((result, field) => ({
+        ...result, [field.name]: {
+            type: field.inputType.toLowerCase(),
+            required: field.required,
+            ...(field.inputType !== "Object") && {
+                value: field.value
+            },
+            ...(field.properties.length >= 1) && {
+                properties: convertFieldToSchema(field.properties)
+            }
+        }
+    }), {})
+}
 
 const addFieldById = (fields, parentId, id) => {
     const newFields = []
@@ -87,7 +98,12 @@ const addFieldById = (fields, parentId, id) => {
 
 const addChildFieldById = (fields, parentId, id) => {
     return fields.map(field => {
-        return field.id === parentId ? {...field, inputType: "Object", properties: [...field.properties, createJsonElement(id)]}
+        return field.id === parentId ? {
+                ...field,
+                inputType: "Object",
+                value: "",
+                properties: [...field.properties, createJsonElement(id)]
+            }
             : {...field, properties: addChildFieldById(field.properties, parentId, id)};
     })
 }
@@ -105,15 +121,16 @@ const updateFieldById = (field, action, updateMethod) => {
 }
 
 export const selectJsonProperties = (state) => state.creator.jsonProperties;
-export const selectValues = (state) => state.creator.inputValues;
 
 export const {
     addJsonProperty,
+    addNestedJsonPropertyById,
+    createSchema,
+    removeJsonProperty,
     updateRequiredById,
     updateNameById,
-    removeJsonProperty,
-    addNestedJsonPropertyById,
-    updateValueById
+    updateValueById,
+    updateInputTypeById
 } = creatorSlice.actions;
 
 export default creatorSlice.reducer;

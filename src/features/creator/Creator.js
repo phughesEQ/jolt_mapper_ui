@@ -1,11 +1,13 @@
 import React from 'react';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {
-    selectJsonProperties, selectValues
+    createSchema,
+    selectJsonProperties,
 } from "./CreatorSlice";
-import {List} from "@material-ui/core";
 import styled from 'styled-components'
 import JsonElement from "./JsonElement";
+import {Button, makeStyles} from "@material-ui/core";
+import {Create} from "@material-ui/icons";
 
 const Container = styled.section`
   display: flex;
@@ -13,17 +15,26 @@ const Container = styled.section`
   padding: 1em;
   flex: 1;
 `
+const useStyles = makeStyles((theme) => ({
+    button: {
+        margin: theme.spacing(3)
+    }
+}));
 
 export function Creator() {
     const fields = useSelector(selectJsonProperties);
-    const values = useSelector(selectValues);
+    const dispatch = useDispatch()
+    const classes = useStyles();
 
     return (
         <Container>
-            <List>
-                {fields.map(field => <JsonElement key={`element-${field.id}`} jsonElement={field} values={values}/>)}
-            </List>
+            {fields.map(field => <JsonElement key={`element-${field.id}`} jsonElement={field}/>)}
+            <Button
+                variant="contained"
+                startIcon={<Create/>}
+                className={classes.button}
+                onClick={() => dispatch(createSchema(fields))}
+            > Create </Button>
         </Container>
     );
 }
-

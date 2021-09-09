@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "lead_data": {
+      "type": "object",
+      "properties": {
+        "current_policy": {
+          "type": "object",
+          "properties": {
+            "street_address": {
+              "type": "string"
+            },
+            "occupation": {
+              "type": "string"
+            },
+            "contact": {
+              "type": "object",
+              "properties": {
+                "first_name": {
+                  "type": "string"
+                },
+                "last_name": {
+                  "type": "string"
+                },
+                "city": {
+                  "type": "string"
+                },
+                "postal_state": {
+                  "type": "string"
+                }
+              }
+            },
+            "health": {
+              "type": "object",
+              "properties": {
+                "age": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
