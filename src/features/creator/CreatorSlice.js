@@ -7,6 +7,7 @@ const createJsonElement = id => {
         name: "Name",
         value: "",
         inputType: "String",
+        concat: false,
         required: false,
         properties: []
     }
@@ -55,6 +56,12 @@ export const creatorSlice = createSlice({
                 return {...property, value: action.payload.value}
             }
             state.jsonProperties = state.jsonProperties.map(property => updateFieldById(property, action, value))
+        },
+        updateConcatById: (state, action) => {
+            const concat = (property, action) => {
+                return {...property, concat: action.payload.concat}
+            }
+            state.jsonProperties = state.jsonProperties.map(property => updateFieldById(property, action, concat))
         },
         createSchema: (state, action) => {
             state.jsonSchema = {
@@ -130,7 +137,8 @@ export const {
     updateRequiredById,
     updateNameById,
     updateValueById,
-    updateInputTypeById
+    updateInputTypeById,
+    updateConcatById
 } = creatorSlice.actions;
 
 export default creatorSlice.reducer;

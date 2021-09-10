@@ -1,5 +1,4 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
     "lead_data": {
@@ -12,16 +11,26 @@
               "type": "string"
             },
             "occupation": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "Doctor",
+                "Taxi Driver"
+              ]
             },
             "contact": {
               "type": "object",
               "properties": {
                 "first_name": {
-                  "type": "string"
+                  "type": "string",
+                  "examples": [
+                    "John"
+                  ]
                 },
                 "last_name": {
-                  "type": "string"
+                  "type": "string",
+                  "examples": [
+                    "Doe"
+                  ]
                 },
                 "city": {
                   "type": "string"

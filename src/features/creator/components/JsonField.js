@@ -13,6 +13,7 @@ import {
     Typography
 } from "@material-ui/core";
 import {
+    updateConcatById,
     updateInputTypeById,
     updateNameById,
     updateRequiredById, updateValueById
@@ -20,6 +21,7 @@ import {
 import styled from "styled-components";
 import schema from "../../resources/exampleJsonStructure.json"
 import {AddBox} from "@material-ui/icons";
+import DeleteIcon from "@material-ui/icons/Delete";
 
 
 const JsonObjectStyle = styled.section`
@@ -93,7 +95,7 @@ export default props => {
     const dispatch = useDispatch();
     const classes = useStyles();
 
-    const {id, name, value, inputType, required} = props
+    const {id, name, value, inputType, required, concat} = props
 
     return <JsonObjectStyle key={`contents-${id}`} type={inputType}>
         <JsonTitle>
@@ -110,30 +112,69 @@ export default props => {
                     onChange={e => dispatch(updateNameById({id, name: e.target.value}))}/>
 
                 {inputType !== "Object" ? <StyledSection><FormControl className={classes.formControl}>
-                        <InputLabel htmlFor={`value-native-simple-${id}`}>Value</InputLabel>
+                    <InputLabel htmlFor={`value-native-simple-${id}`}>Value</InputLabel>
+                    <Select
+                        key={`value-${id}`}
+                        id={`value-${id}`}
+                        value={value}
+                        onChange={e => dispatch(updateValueById({id, value: e.target.value}))}
+                        inputProps={{
+                            name: 'value',
+                            id: `value-native-simple-${id}`,
+                        }}
+                    >
+                        {everquoteValues.map(x => <MenuItem key={x}
+                                                            value={x}>{x.substring(x.lastIndexOf(".") + 1)}</MenuItem>)}
+                    </Select>
+                </FormControl>
+                    {concat ? <div><FormControl className={classes.formControl}>
+                        <InputLabel htmlFor={`join-native-simple-${id}-1`}>Join By</InputLabel>
                         <Select
-                            key={`value-${id}`}
-                            id={`value-${id}`}
-                            value={value}
-                            onChange={e => dispatch(updateValueById({id, value: e.target.value}))}
+                            key={`join-${id}-1`}
+                            id={`join-${id}-1`}
                             inputProps={{
-                                name: 'value',
-                                id: `value-native-simple-${id}`,
+                                name: 'join',
+                                id: `join-native-simple-${id}-1`,
                             }}
                         >
-                            {everquoteValues.map(x => <MenuItem key={x}
-                                                                value={x}>{x.substring(x.lastIndexOf(".") + 1)}</MenuItem>)}
+                            <MenuItem value={" "}>Space</MenuItem>
+                            <MenuItem value={"/"}>/</MenuItem>
+                            <MenuItem value={"-"}>-</MenuItem>
                         </Select>
                     </FormControl>
-                        <Button
-                            key={`add-${id}`}
-                            color={"primary"}
-                            variant="outlined"
-                            className={classes.button}
-                            startIcon={<AddBox/>}
-                        >add value</Button>
-                    </StyledSection>
-                    : ""}
+                        <FormControl className={classes.formControl}>
+                            <InputLabel htmlFor={`value-native-simple-${id}-1`}>Value</InputLabel>
+                            <Select
+                                key={`value-${id}-1`}
+                                id={`value-${id}-1`}
+                                value={value}
+                                onChange={e => dispatch(updateValueById({id, value: e.target.value}))}
+                                inputProps={{
+                                    name: 'value',
+                                    id: `value-native-simple-${id}-1`,
+                                }}
+                            >
+                                {everquoteValues.map(x => <MenuItem key={x}
+                                                                    value={x}>{x.substring(x.lastIndexOf(".") + 1)}</MenuItem>)}
+                            </Select>
+                        </FormControl></div> : ""}
+                    {concat ? <Button
+                        key={`add-${id}`}
+                        color={"primary"}
+                        variant="outlined"
+                        className={classes.button}
+                        onClick={() => dispatch(updateConcatById({id, concat: false}))}
+                        startIcon={<DeleteIcon/>}
+                    >remove value</Button> : <Button
+                        key={`add-${id}`}
+                        color={"primary"}
+                        variant="outlined"
+                        className={classes.button}
+                        onClick={() => dispatch(updateConcatById({id, concat: true}))}
+                        startIcon={<AddBox/>}
+                    >add value</Button>}
+
+                </StyledSection> : ""}
             </StyledSection>
             <StyledSection>
                 <FormControl className={classes.formControl}>
