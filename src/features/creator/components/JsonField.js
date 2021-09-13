@@ -13,10 +13,10 @@ import {
     Typography
 } from "@material-ui/core";
 import {
-    updateConcatById,
+    updateConcatById, updateDelimiterById,
     updateInputTypeById,
     updateNameById,
-    updateRequiredById, updateValueById
+    updateRequiredById, updateValue2ById, updateValueById
 } from "../CreatorSlice";
 import styled from "styled-components";
 import schema from "../../resources/exampleJsonStructure.json"
@@ -55,6 +55,7 @@ const StyledSection = styled.section`
   flex: 1;
   flex-direction: row;
   justify-content: flex-start;
+  flex-wrap: wrap;
 `
 
 const useStyles = makeStyles((theme) => ({
@@ -95,7 +96,7 @@ export default props => {
     const dispatch = useDispatch();
     const classes = useStyles();
 
-    const {id, name, value, inputType, required, concat} = props
+    const {id, name, value, value2, inputType, required, concat} = props
 
     return <JsonObjectStyle key={`contents-${id}`} type={inputType}>
         <JsonTitle>
@@ -127,15 +128,17 @@ export default props => {
                                                             value={x}>{x.substring(x.lastIndexOf(".") + 1)}</MenuItem>)}
                     </Select>
                 </FormControl>
-                    {concat ? <div><FormControl className={classes.formControl}>
+                    {concat ? <StyledSection><FormControl className={classes.formControl}>
                         <InputLabel htmlFor={`join-native-simple-${id}-1`}>Join By</InputLabel>
                         <Select
                             key={`join-${id}-1`}
                             id={`join-${id}-1`}
+                            onChange={e => dispatch(updateDelimiterById({id, delimiter: e.target.value}))}
                             inputProps={{
                                 name: 'join',
                                 id: `join-native-simple-${id}-1`,
                             }}
+                            defaultValue={" "}
                         >
                             <MenuItem value={" "}>Space</MenuItem>
                             <MenuItem value={"/"}>/</MenuItem>
@@ -147,8 +150,8 @@ export default props => {
                             <Select
                                 key={`value-${id}-1`}
                                 id={`value-${id}-1`}
-                                value={value}
-                                onChange={e => dispatch(updateValueById({id, value: e.target.value}))}
+                                value={value2}
+                                onChange={e => dispatch(updateValue2ById({id, value: e.target.value}))}
                                 inputProps={{
                                     name: 'value',
                                     id: `value-native-simple-${id}-1`,
@@ -157,7 +160,7 @@ export default props => {
                                 {everquoteValues.map(x => <MenuItem key={x}
                                                                     value={x}>{x.substring(x.lastIndexOf(".") + 1)}</MenuItem>)}
                             </Select>
-                        </FormControl></div> : ""}
+                        </FormControl></StyledSection> : ""}
                     {concat ? <Button
                         key={`add-${id}`}
                         color={"primary"}

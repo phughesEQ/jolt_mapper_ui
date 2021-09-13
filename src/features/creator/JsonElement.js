@@ -14,10 +14,10 @@ const Element = styled.section`
 
 export default props => {
     const {jsonElement} = props
-    const {id, name, value, inputType, required, properties, concat} = jsonElement
+    const {id, name, value, inputType, required, properties, concat, value2} = jsonElement
 
     return <Element key={`list-${id}`} type={inputType}>
-        <JsonField id={id} name={name} inputType={inputType} required={required} value={value} concat={concat}/>
+        <JsonField id={id} name={name} inputType={inputType} required={required} value={value} concat={concat} value2={value2}/>
         <Buttons id={id} type={inputType}/>
         {
             properties

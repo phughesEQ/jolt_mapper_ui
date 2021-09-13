@@ -6,6 +6,8 @@ const createJsonElement = id => {
         id: id,
         name: "Name",
         value: "",
+        value1: "",
+        delimiter: " ",
         inputType: "String",
         concat: false,
         required: false,
@@ -57,6 +59,18 @@ export const creatorSlice = createSlice({
             }
             state.jsonProperties = state.jsonProperties.map(property => updateFieldById(property, action, value))
         },
+        updateValue2ById: (state, action) => {
+            const value = (property, action) => {
+                return {...property, value2: action.payload.value}
+            }
+            state.jsonProperties = state.jsonProperties.map(property => updateFieldById(property, action, value))
+        },
+        updateDelimiterById: (state, action) => {
+            const delimiter = (property, action) => {
+                return {...property, delimiter: action.payload.delimiter}
+            }
+            state.jsonProperties = state.jsonProperties.map(property => updateFieldById(property, action, delimiter))
+        },
         updateConcatById: (state, action) => {
             const concat = (property, action) => {
                 return {...property, concat: action.payload.concat}
@@ -78,7 +92,11 @@ function convertFieldToSchema(fields) {
             type: field.inputType.toLowerCase(),
             required: field.required,
             ...(field.inputType !== "Object") && {
-                value: field.value
+                value: field.value,
+                ...(field.concat) && {
+                    isConcat: field.concat,
+                    value: [field.value, field.value1, field.delimiter]
+                },
             },
             ...(field.properties.length >= 1) && {
                 properties: convertFieldToSchema(field.properties)
@@ -138,7 +156,9 @@ export const {
     updateNameById,
     updateValueById,
     updateInputTypeById,
-    updateConcatById
+    updateConcatById,
+    updateValue2ById,
+    updateDelimiterById
 } = creatorSlice.actions;
 
 export default creatorSlice.reducer;
