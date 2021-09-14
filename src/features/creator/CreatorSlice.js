@@ -3,15 +3,8 @@ import {v4 as uuidv4} from 'uuid';
 
 const createJsonElement = id => {
     return {
-        id: id,
-        name: "Name",
-        value: "",
-        value1: "",
-        delimiter: " ",
-        inputType: "String",
-        concat: false,
-        required: false,
-        properties: []
+        id: id, name: "Name", value: "", value1: "", delimiter: " ", inputType: "String", concat: false,
+        required: false, properties: []
     }
 }
 
@@ -28,54 +21,26 @@ export const creatorSlice = createSlice({
         addJsonProperty: (state, action) => {
             state.jsonProperties = addFieldById(state.jsonProperties, action.payload.parentId, action.payload.id)
         },
-        removeJsonProperty: (state, action) => {
-            state.jsonProperties = removeFieldById(state.jsonProperties, action.payload)
-        },
         addNestedJsonPropertyById: (state, action) => {
             state.jsonProperties = addChildFieldById(state.jsonProperties, action.payload.parentId, action.payload.id)
         },
-        updateNameById: (state, action) => {
-            const name = (property, action) => {
-                return {...property, name: action.payload.name}
+        removeJsonProperty: (state, action) => {
+            state.jsonProperties = removeFieldById(state.jsonProperties, action.payload)
+        },
+        updateFieldById: (state, action) => {
+            const field = (property, action) => {
+                property[action.payload.field] = action.payload.value
+                return property
             }
-            state.jsonProperties = state.jsonProperties.map(property => updateFieldById(property, action, name))
+            state.jsonProperties = state.jsonProperties.map(property => updateField(property, action, field))
         },
         updateInputTypeById: (state, action) => {
-            const type = (property, action) => {
+            const field = (property, action) => {
                 if (property.inputType === "Object" && property.properties.length >= 1) return property
-                return {...property, inputType: action.payload.type}
+                property[action.payload.field] = action.payload.value
+                return {...property, concat: false}
             }
-            state.jsonProperties = state.jsonProperties.map(property => updateFieldById(property, action, type))
-        },
-        updateRequiredById: (state, action) => {
-            const required = (property, action) => {
-                return {...property, required: action.payload.required}
-            }
-            state.jsonProperties = state.jsonProperties.map(property => updateFieldById(property, action, required))
-        },
-        updateValueById: (state, action) => {
-            const value = (property, action) => {
-                return {...property, value: action.payload.value}
-            }
-            state.jsonProperties = state.jsonProperties.map(property => updateFieldById(property, action, value))
-        },
-        updateValue2ById: (state, action) => {
-            const value = (property, action) => {
-                return {...property, value2: action.payload.value}
-            }
-            state.jsonProperties = state.jsonProperties.map(property => updateFieldById(property, action, value))
-        },
-        updateDelimiterById: (state, action) => {
-            const delimiter = (property, action) => {
-                return {...property, delimiter: action.payload.delimiter}
-            }
-            state.jsonProperties = state.jsonProperties.map(property => updateFieldById(property, action, delimiter))
-        },
-        updateConcatById: (state, action) => {
-            const concat = (property, action) => {
-                return {...property, concat: action.payload.concat}
-            }
-            state.jsonProperties = state.jsonProperties.map(property => updateFieldById(property, action, concat))
+            state.jsonProperties = state.jsonProperties.map(property => updateField(property, action, field))
         },
         createSchema: (state, action) => {
             state.jsonSchema = {
@@ -85,25 +50,6 @@ export const creatorSlice = createSlice({
         }
     }
 });
-
-function convertFieldToSchema(fields) {
-    return fields.reduce((result, field) => ({
-        ...result, [field.name]: {
-            type: field.inputType.toLowerCase(),
-            required: field.required,
-            ...(field.inputType !== "Object") && {
-                value: field.value,
-                ...(field.concat) && {
-                    isConcat: field.concat,
-                    value: [field.value, field.value1, field.delimiter]
-                },
-            },
-            ...(field.properties.length >= 1) && {
-                properties: convertFieldToSchema(field.properties)
-            }
-        }
-    }), {})
-}
 
 const addFieldById = (fields, parentId, id) => {
     const newFields = []
@@ -133,6 +79,21 @@ const addChildFieldById = (fields, parentId, id) => {
     })
 }
 
+function convertFieldToSchema(fields) {
+    return fields.reduce((result, field) => ({
+        ...result,
+        [field.name]: {
+            type: field.inputType.toLowerCase(),
+            required: field.required,
+            ...(field.inputType !== "Object") && {
+                value: field.value,
+                ...(field.concat) && {isConcat: field.concat, value: [field.value, field.value1, field.delimiter]},
+            },
+            ...(field.properties.length >= 1) && {properties: convertFieldToSchema(field.properties)}
+        }
+    }), {})
+}
+
 const removeFieldById = (fields, id) => {
     const filtered = fields.filter(field => field.id !== id)
     return filtered.map(field => {
@@ -140,9 +101,9 @@ const removeFieldById = (fields, id) => {
     })
 }
 
-const updateFieldById = (field, action, updateMethod) => {
+const updateField = (field, action, updateMethod) => {
     if (field.id === action.payload.id) return updateMethod(field, action)
-    return {...field, properties: field.properties.map(child => updateFieldById(child, action, updateMethod))}
+    return {...field, properties: field.properties.map(child => updateField(child, action, updateMethod))}
 }
 
 export const selectJsonProperties = (state) => state.creator.jsonProperties;
@@ -152,13 +113,8 @@ export const {
     addNestedJsonPropertyById,
     createSchema,
     removeJsonProperty,
-    updateRequiredById,
-    updateNameById,
-    updateValueById,
     updateInputTypeById,
-    updateConcatById,
-    updateValue2ById,
-    updateDelimiterById
+    updateFieldById
 } = creatorSlice.actions;
 
 export default creatorSlice.reducer;
