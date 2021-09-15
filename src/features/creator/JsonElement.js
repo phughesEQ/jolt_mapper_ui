@@ -32,7 +32,7 @@ const JsonTitle = styled.section`
 
 export default props => {
     const {jsonElement} = props
-    const {id, name, value, inputType, required, properties, concat, value1} = jsonElement
+    const {id, name, inputType, properties} = jsonElement
 
     return <Element key={`list-${id}`} type={inputType}>
         <InputStyles>
@@ -42,7 +42,7 @@ export default props => {
             </JsonTitle>
         </InputStyles>
 
-        <JsonField id={id} name={name} inputType={inputType} required={required} value={value} concat={concat} value2={value1}/>
+        <JsonField jsonElement={jsonElement}/>
         <Buttons id={id} type={inputType}/>
         {
             properties

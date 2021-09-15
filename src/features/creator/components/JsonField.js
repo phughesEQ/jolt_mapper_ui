@@ -1,7 +1,7 @@
 import React from "react";
 import {useDispatch} from "react-redux";
 import {Checkbox, makeStyles, MenuItem, TextField,} from "@material-ui/core";
-import {updateInputTypeById, updateFieldById} from "../CreatorSlice";
+import {updateInputTypeById, updateFieldById, updateValueById} from "../CreatorSlice";
 import styled from "styled-components";
 import schema from "../../resources/exampleJsonSchema.json"
 import DropDown from "./DropDown";
@@ -33,7 +33,7 @@ const extractKeys = ({properties}) =>
     Object.keys(properties).reduce((acc, key) =>
         acc.concat(properties[key].type !== 'object' ? key : extractKeys(properties[key]).map(p => `${key}.${p}`)), []);
 
-const everquoteValues = extractKeys(schema)
+const options = extractKeys(schema)
 
 const typeValues = [
     "Object",
@@ -45,24 +45,24 @@ const typeValues = [
 export default props => {
     const dispatch = useDispatch();
     const classes = useStyles();
-
-    const {id, name, value, value2, inputType, required, concat} = props
+    const {jsonElement} = props
+    const {id, name, value, inputType, required, concat, value1, mappedValues} = jsonElement
 
     return <JsonBody>
         <StyledSection>
             <TextField key={`name-${id}`} type={"text"} label={"Name"} className={classes.input} value={name}
                        onChange={e => dispatch(updateFieldById({id, value: e.target.value, field: "name"}))}/>
             {inputType !== "Object" ? <StyledSection>
-                <DropDown id={id} value={value} label={"Value"} onChange={updateFieldById} field={"value"}>
-                    {everquoteValues.map(x => <MenuItem key={x}
-                                                        value={x}>{x.substring(x.lastIndexOf(".") + 1)}</MenuItem>)}
+                <DropDown id={id} value={value} label={"Value"} onChange={updateValueById} field={"value"}
+                          mappedValues={mappedValues}>
+                    {options.map(x => <MenuItem key={x} value={x}>{x.substring(x.lastIndexOf(".") + 1)}</MenuItem>)}
                 </DropDown>
-                <ConcatField id={id} concat={concat} value={value2} options={everquoteValues}/>
+                <ConcatField id={id} concat={concat} value={value1} options={options}/>
             </StyledSection> : ""}
         </StyledSection>
         <StyledSection>
             <DropDown id={id} value={inputType} label={"Input Type"} onChange={updateInputTypeById} field={"inputType"}>
-                {typeValues.map(x => <MenuItem key={x} value={x}>{x.substring(x.lastIndexOf(".") + 1)}</MenuItem>)}
+                {typeValues.map(x => <MenuItem key={x} value={x}>{x}</MenuItem>)}
             </DropDown>
             <div> Required
                 <Checkbox key={`check-${id}`} checked={required} className={classes.input}

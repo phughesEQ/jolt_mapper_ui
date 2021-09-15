@@ -51,5 +51,4 @@ export default props => {
             remove value
         </Button>
     </StyledSection>
-
 }

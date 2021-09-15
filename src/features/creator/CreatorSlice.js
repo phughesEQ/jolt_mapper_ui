@@ -1,17 +1,28 @@
 import {createSlice} from '@reduxjs/toolkit';
 import {v4 as uuidv4} from 'uuid';
+import schema from "../resources/exampleJsonSchema.json";
 
 const createJsonElement = id => {
     return {
         id: id, name: "Name", value: "", value1: "", delimiter: " ", inputType: "String", concat: false,
-        required: false, properties: []
+        required: false, properties: [], mappedValues: {}
     }
+}
+
+const extractValues = ({properties}) => {
+    let result = {}
+    Object.keys(properties).forEach(x => {
+        if(properties[x].type === 'object') result = {...result, ...extractValues(properties[x])}
+        if(properties[x].enum) result[x] = properties[x].enum
+    });
+    return result
 }
 
 const initialState = {
     jobCode: "",
     jsonProperties: [createJsonElement(uuidv4())],
-    jsonSchema: {}
+    jsonSchema: {},
+    mappedValues: extractValues(schema)
 };
 
 export const creatorSlice = createSlice({
@@ -34,11 +45,32 @@ export const creatorSlice = createSlice({
             }
             state.jsonProperties = state.jsonProperties.map(property => updateField(property, action, field))
         },
+        updateValueById: (state, action) => {
+            const field = (property, action) => {
+                let value = action.payload.value
+                let values = state.mappedValues[value.substring(value.lastIndexOf(".") + 1)]
+
+                property[action.payload.field] = value
+                // eslint-disable-next-line no-sequences
+                property.mappedValues = values ? values.reduce((acc,curr)=> (acc[curr]=curr, acc),{}) : {}
+
+                return property
+            }
+            state.jsonProperties = state.jsonProperties.map(property => updateField(property, action, field))
+        },
         updateInputTypeById: (state, action) => {
             const field = (property, action) => {
                 if (property.inputType === "Object" && property.properties.length >= 1) return property
                 property[action.payload.field] = action.payload.value
-                return {...property, concat: false}
+                if (action.payload.value !== "Object") return {...property, concat: false, value: "", value1: "", mappedValues: {}}
+                return {...property}
+            }
+            state.jsonProperties = state.jsonProperties.map(property => updateField(property, action, field))
+        },
+        updateMappedValues: (state, action) => {
+            const field = (property, action) => {
+                property.mappedValues[action.payload.key] = action.payload.value
+                return property
             }
             state.jsonProperties = state.jsonProperties.map(property => updateField(property, action, field))
         },
@@ -73,6 +105,9 @@ const addChildFieldById = (fields, parentId, id) => {
                 ...field,
                 inputType: "Object",
                 value: "",
+                value1: "",
+                mappedValues: {},
+                concat: false,
                 properties: [...field.properties, createJsonElement(id)]
             }
             : {...field, properties: addChildFieldById(field.properties, parentId, id)};
@@ -114,7 +149,9 @@ export const {
     createSchema,
     removeJsonProperty,
     updateInputTypeById,
-    updateFieldById
+    updateFieldById,
+    updateValueById,
+    updateMappedValues
 } = creatorSlice.actions;
 
 export default creatorSlice.reducer;

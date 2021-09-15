@@ -1,6 +1,7 @@
 import React from "react";
-import {FormControl, InputLabel, makeStyles, Select} from "@material-ui/core";
+import {FormControl, InputLabel, makeStyles, Select, TextField} from "@material-ui/core";
 import {useDispatch} from "react-redux";
+import {updateMappedValues} from "../CreatorSlice";
 
 const useStyles = makeStyles((theme) => ({
     formControl: {
@@ -13,7 +14,7 @@ const useStyles = makeStyles((theme) => ({
 export default props => {
     const dispatch = useDispatch();
     const classes = useStyles();
-    const {id, value, label, onChange, field, defaultV} = props
+    const {id, value, label, onChange, field, defaultV, mappedValues} = props
 
     return <FormControl className={classes.formControl}>
         <InputLabel htmlFor={`${label}-native-simple-${id}`}>{label}</InputLabel>
@@ -26,5 +27,11 @@ export default props => {
         >
             {props.children}
         </Select>
+        {
+            (mappedValues) ? Object.keys(mappedValues).map(key =>
+                <TextField key={`mapped-${key}-${id}`} type={"text"} label={key} value={mappedValues[key]}
+                           onChange={e => dispatch(updateMappedValues({id, key, value: e.target.value}))}/>
+            ) : ""
+        }
     </FormControl>
 }

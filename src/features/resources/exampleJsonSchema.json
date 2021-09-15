@@ -45,6 +45,14 @@
               "properties": {
                 "age": {
                   "type": "integer"
+                },
+                "coverage": {
+                  "type": "string",
+                  "enum": [
+                    "Low",
+                    "Medium",
+                    "High"
+                  ]
                 }
               }
             }
